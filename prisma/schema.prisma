@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Clinic {
+  id          Int     @id @default(autoincrement()) 
+  owner       String
+  phoneNumber String
+  email       String
+  clinicName  String
+  address     String
+  PIN         String
+  user        User[]
+  membership  Membership?
+}
+
+model Membership {
+  id          Int     @id @default(autoincrement())
+  clinicId    Int     @unique
+  clinic      Clinic  @relation(fields: [clinicId], references: [id])
+  type        String
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  clinicId    Int     
+  clinic      Clinic  @relation(fields: [clinicId], references: [id])
+  name        String
+  email       String
+  phoneNumber String
+  NIK         String
+  address     String
+  role        String
+  PIN         String
+}
+
+model Patient {
+  id          Int     @id @default(autoincrement())
+  clinicId    Int    
+  NIK         String
+  fullname    String
+  gender      Boolean
+  bloodType   String
+  birthday    DateTime
+  phoneNumber String
+  address     String
+  assesment   Assesment?
+  diagnosis   Diagnosis[]
+}
+
+model Assesment {
+  id            Int     @id @default(autoincrement())
+  patientId     Int     @unique
+  patient       Patient @relation(fields: [patientId], references: [id])
+  height        Int
+  weight        Int
+  allergy       String
+  systole       Int
+  diastole      Int
+  pulse         Int
+  respiration   Int
+  temp          Int
+  cholesterol   Int
+  bloodGlucose  Int
+  gout          Int
+}
+
+model Diagnosis {
+  id          Int     @id @default(autoincrement())
+  patientId   Int     
+  patient     Patient @relation(fields: [patientId], references: [id])
+  subjective  String
+  objective   String
+  analysis    String
+  ICD10       String
+  ICD9CM      String
+  plan        String
+  vaccine     String
+  diagnosisDate   DateTime @default(now())
+  prescription Prescription?
+}
+
+model Prescription {
+  id          Int     @id @default(autoincrement())
+  diagnosisId Int     @unique
+  diagnosis   Diagnosis @relation(fields: [diagnosisId], references: [id])
+  drug        String
+  dose         String
+  note        String
+  transaction Transaction?
+}
+
+model Transaction {
+  id          Int     @id @default(autoincrement())
+  prescriptionId Int  @unique
+  prescription Prescription @relation(fields: [prescriptionId], references: [id])
+  transactionDate DateTime @default(now())
+  totalBill    Int    
+}
+
